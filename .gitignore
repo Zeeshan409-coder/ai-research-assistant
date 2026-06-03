@@ -1,0 +1,11 @@
+backend/venv/
+venv/
+.env
+__pycache__/
+*.pyc
+backend/app/core/bge-reranker-base/
+# Next.js Build Outputs & Local Dependencies
+frontend/.next/
+frontend/node_modules/
+frontend/.env*.local
+frontend/out/

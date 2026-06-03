@@ -1,0 +1,14 @@
+[
+  {
+    "query": "Which university is the applicant applying to?",
+    "expected_document": "Letter of Motivation.pdf"
+  },
+  {
+    "query": "What master course is the applicant pursuing?",
+    "expected_document": "Letter of Motivation.pdf"
+  },
+  {
+    "query": "Where did the applicant complete an internship or work experience?",
+    "expected_document": "Letter of Motivation.pdf"
+  }
+]

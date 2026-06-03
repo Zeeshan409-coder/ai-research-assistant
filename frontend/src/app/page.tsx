@@ -1,0 +1,1 @@
+export default function Page() { return (<main style={{fontFamily:"sans-serif",padding:40}}><h1>AI Research Assistant</h1><p>Frontend environment successfully compiled completely offline!</p></main>) }
