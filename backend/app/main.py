@@ -3,7 +3,8 @@ from app.api.upload import router as upload_router
 from app.api.search import router as search_router
 from app.api.chat import router as chat_router
 from app.api.conversations import router as conversations_router
-from app.api.streaming_chat import router as streaming_chat_router  # 👈 Imported your new router
+from app.api.streaming_chat import router as streaming_chat_router
+from app.api.workspaces import router as workspaces_router
 from app.services.qdrant_service import create_collection
 from app.db.init_db import create_tables
 
@@ -28,4 +29,5 @@ app.include_router(upload_router)
 app.include_router(search_router)
 app.include_router(chat_router)
 app.include_router(conversations_router)
-app.include_router(streaming_chat_router)  # 👈 Mounted your real-time streaming endpoint path
+app.include_router(streaming_chat_router)
+app.include_router(workspaces_router)  # 👈 Mounted your scoped workspace endpoints

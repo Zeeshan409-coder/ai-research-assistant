@@ -1,44 +1,100 @@
-from uuid import uuid4
-from qdrant_client.models import VectorParams, Distance, PointStruct
-from app.db.qdrant import client
-from app.models.document_metadata import build_chunk_metadata
+import uuid
+from qdrant_client import QdrantClient
+from qdrant_client.models import PointStruct, Distance, VectorParams, Filter, FieldCondition, MatchValue
 
-COLLECTION_NAME = "research_documents"
+# Initialize Qdrant client pointing to your background Docker container
+client = QdrantClient(host="localhost", port=6333)
+COLLECTION_NAME = "research_chunks"
 
 
 def create_collection():
-    collections = client.get_collections().collections
-    exists = any(col.name == COLLECTION_NAME for col in collections)
-
-    if not exists:
+    """
+    Creates the master vector indexing collection if it does not exist.
+    """
+    if not client.collection_exists(collection_name=COLLECTION_NAME):
         client.create_collection(
             collection_name=COLLECTION_NAME,
-            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
-        )
-
-
-def store_document_chunks(chunks, filename, document_id, embedding_function):
-    points = []
-    total_chunks = len(chunks)
-
-    for chunk in chunks:
-        # Generate the math concept vector for the clean chunk text snippet
-        embedding = embedding_function(chunk["chunk_text"])
-
-        # Construct the detailed production metadata package
-        metadata = build_chunk_metadata(
-            filename=filename,
-            document_id=document_id,
-            chunk=chunk,
-            total_chunks=total_chunks
-        )
-
-        points.append(
-            PointStruct(
-                id=str(uuid4()),
-                vector=embedding,
-                payload=metadata
+            vectors_config=VectorParams(
+                size=384,  # Matching your local BAAI/bge-small dense dimension vectors size
+                distance=Distance.COSINE
             )
         )
 
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
+
+def store_embeddings(points_data: list[dict]):
+    """
+    Converts vector dictionary arrays into Qdrant PointStruct instances and upserts them.
+    """
+    points = []
+    for data in points_data:
+        points.append(
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=data["vector"],
+                payload={
+                    "text": data["text"],
+                    **data["metadata"]  # Unpacks workspace_id, document_id, source, page_number, chunk_index
+                }
+            )
+        )
+    
+    client.upsert(
+        collection_name=COLLECTION_NAME,
+        points=points
+    )
+
+
+# Upgraded Step 7 Search Service Layer: Accepts an optional workspace isolation filter condition
+def search_embeddings(vector: list[float], limit: int = 20, workspace_id: str = None):
+    """
+    Executes a high-precision cosine similarity look up inside Qdrant,
+    optionally locking the query scope down to a single designated workspace id.
+    """
+    query_filter = None
+    
+    # Standardized Step 7 payload metadata matching constraint filter condition
+    if workspace_id:
+        query_filter = Filter(
+            must=[
+                FieldCondition(
+                    key="workspace_id",
+                    match=MatchValue(value=workspace_id)
+                )
+            ]
+        )
+
+    results = client.search(
+        collection_name=COLLECTION_NAME,
+        query_vector=vector,
+        query_filter=query_filter,  # 👈 Enforces isolation natively inside Qdrant
+        limit=limit,
+        with_payload=True
+    )
+    
+    # Format vector outcomes uniformly to align seamlessly with your downstream RRF fusion functions
+    formatted_results = []
+    for hit in results:
+        formatted_results.append({
+            "text": hit.payload.get("text", ""),
+            "score": hit.score,
+            "metadata": {k: v for k, v in hit.payload.items() if k != "text"}
+        })
+    return formatted_results
+
+# 👈 Appended Step 11 Logic: Deletes all chunks matching a specific file inside Qdrant
+def delete_document_chunks(document_id: str):
+    """
+    Commands Qdrant to locate and permanently purge all vector points 
+    matching a targeted document tracking hash using metadata payload filters.
+    """
+    client.delete(
+        collection_name=COLLECTION_NAME,
+        points_selector=Filter(
+            must=[
+                FieldCondition(
+                    key="document_id",
+                    match=MatchValue(value=document_id)
+                )
+            ]
+        )
+    )
