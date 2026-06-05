@@ -2,26 +2,75 @@ import axios from "axios"
 
 const API_BASE_URL = "http://localhost:8000"
 
+// 🛡️ Robust Cookie Substring Token Extractor
+// Ensures spaces, padding, or text encoding arrays inside browser storage never break extraction paths
+const getAuthToken = () => {
+  if (typeof document === "undefined") return null
+  
+  const name = "auth_token="
+  const decodedCookie = decodeURIComponent(document.cookie)
+  const cookieArray = decodedCookie.split(';')
+  
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i]
+    while (cookie.charAt(0) === ' ') {
+      cookie = cookie.substring(1)
+    }
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length, cookie.length)
+    }
+  }
+  return null
+}
+
 export const api = {
-  // Workspace Network Operations
+  // Scoped Multi-Tenant Authentication Network Operations
+  loginUser: async (email: string, password: string) => {
+    const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password })
+    return response.data
+  },
+
+  registerUser: async (email: string, password: string) => {
+    const response = await axios.post(`${API_BASE_URL}/auth/register`, { email, password })
+    return response.data
+  },
+
+  // Workspace Scoped Network Operations
   getWorkspaces: async () => {
-    const response = await axios.get(`${API_BASE_URL}/workspaces`)
+    const token = getAuthToken()
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const response = await axios.get(`${API_BASE_URL}/workspaces`, { headers })
     return response.data
   },
   
-  createWorkspace: async (name: string) => {
-    const response = await axios.post(`${API_BASE_URL}/workspaces/`, { name })
+createWorkspace: async (name: string) => {
+  const token = getAuthToken()
+  // Generates the standard header packet value string
+  const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  const response = await axios.post(`${API_BASE_URL}/workspaces`, { name }, { headers })
+  return response.data
+},
+
+
+  getWorkspaceStats: async (workspaceId: string) => {
+    const token = getAuthToken()
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const response = await axios.get(`${API_BASE_URL}/workspaces/${workspaceId}/stats`, { headers })
+    return response.data
+  },
+
+  getWorkspaceDocuments: async (workspaceId: string) => {
+    const token = getAuthToken()
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const response = await axios.get(`${API_BASE_URL}/workspaces/${workspaceId}/documents`, { headers })
     return response.data
   },
 
   // Scoped Conversation History Operations
   getConversations: async () => {
-    const response = await axios.get(`${API_BASE_URL}/conversations/`)
-    return response.data
-  },
-
-  createNewChat: async () => {
-    const response = await axios.post(`${API_BASE_URL}/conversations/`)
+    const token = getAuthToken()
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const response = await axios.get(`${API_BASE_URL}/conversations`, { headers })
     return response.data
   }
 }

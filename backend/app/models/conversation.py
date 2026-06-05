@@ -8,11 +8,13 @@ class Conversation(Base):
     __tablename__ = "conversations"
 
     id = Column(String, primary_key=True)
-    workspace_id = Column(String, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True) # Temporarily nullable for safe migration
+    # 👈 Step 3: Scopes chat session records straight to the active account identity
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=True) # Temporarily nullable for safe live data migrations
+    workspace_id = Column(String, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True)
     title = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Relational tracking hooks
+    # Relational tracking connectors
     workspace = relationship("Workspace", back_populates="conversations")
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
 
