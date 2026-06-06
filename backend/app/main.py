@@ -8,7 +8,8 @@ from app.api.streaming_chat import router as streaming_chat_router
 from app.api.workspaces import router as workspaces_router
 from app.api.auth import router as auth_router  
 from app.api.users import router as users_router  
-from app.api.evaluation import router as analytics_router  # 👈 Imported your new RAG analytics router
+from app.api.evaluation import router as analytics_router  
+from app.api.research import router as research_router  # 👈 Imported your new agentic research router
 from app.services.qdrant_service import create_collection
 from app.db.init_db import create_tables
 
@@ -45,4 +46,5 @@ app.include_router(streaming_chat_router)
 app.include_router(workspaces_router)
 app.include_router(auth_router)  
 app.include_router(users_router)  
-app.include_router(analytics_router)  # 👈 Mounted your new RAG evaluations endpoints tracker
+app.include_router(analytics_router)  
+app.include_router(research_router)  # 👈 Mounted your new agentic research workflow endpoint

@@ -2,9 +2,9 @@ import axios from "axios"
 
 const API_BASE_URL = "http://localhost:8000"
 
-// 🛡️ Robust Cookie Substring Token Extractor
-// Ensures spaces, padding, or text encoding arrays inside browser storage never break extraction paths
-const getAuthToken = () => {
+// 🛡️ Bulletproof Substring Cookie Extraction Engine
+// Guarantees token readings clear successfully even with padding spaces or encoding variations
+const getAuthToken = (): string | null => {
   if (typeof document === "undefined") return null
   
   const name = "auth_token="
@@ -35,7 +35,7 @@ export const api = {
     return response.data
   },
 
-  // Workspace Scoped Network Operations
+  // Workspace Scoped Network Operations (Fully Hydrated with Bearer Token Injection)
   getWorkspaces: async () => {
     const token = getAuthToken()
     const headers = token ? { Authorization: `Bearer ${token}` } : {}
@@ -43,14 +43,12 @@ export const api = {
     return response.data
   },
   
-createWorkspace: async (name: string) => {
-  const token = getAuthToken()
-  // Generates the standard header packet value string
-  const headers = token ? { Authorization: `Bearer ${token}` } : {}
-  const response = await axios.post(`${API_BASE_URL}/workspaces`, { name }, { headers })
-  return response.data
-},
-
+  createWorkspace: async (name: string) => {
+    const token = getAuthToken()
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const response = await axios.post(`${API_BASE_URL}/workspaces`, { name }, { headers })
+    return response.data
+  },
 
   getWorkspaceStats: async (workspaceId: string) => {
     const token = getAuthToken()

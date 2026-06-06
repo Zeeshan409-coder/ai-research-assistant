@@ -6,7 +6,6 @@ import { api } from "../../lib/api"
 import { Folder, Plus, LayoutDashboard } from "lucide-react"
 
 export default function WorkspaceSidebar() {
-  // 🛡️ Added addWorkspace state modifier loop from your updated chatStore slice
   const { workspaces, setWorkspaces, activeWorkspaceId, setActiveWorkspaceId, addWorkspace } = useChatStore()
   const [newWorkspaceName, setNewWorkspaceName] = useState("")
   const [isCreating, setIsCreating] = useState(false)
@@ -14,10 +13,12 @@ export default function WorkspaceSidebar() {
   useEffect(() => {
     const loadWorkspaces = async () => {
       try {
+        // 🚀 CRITICAL FIX: Explicitly leverages your core api transport module 
+        // which contains your bulletproof cookie parsing injection engine!
         const data = await api.getWorkspaces()
         setWorkspaces(data)
         if (data.length > 0 && !activeWorkspaceId) {
-          setActiveWorkspaceId(data[0].id) // Default auto-loads the primary collection tracking row safely
+          setActiveWorkspaceId(data[0].id) // Default auto-loads the primary tracking row safely
         }
       } catch (error) {
         console.error("Failed to fetch multi-tenant workspace list:", error)
@@ -31,13 +32,12 @@ export default function WorkspaceSidebar() {
     if (!newWorkspaceName.trim()) return
 
     try {
-      // 1. Submit the clean native JSON payload down to your FastAPI port
+      // Submit the clean native JSON payload down to your FastAPI port cleanly
       const created = await api.createWorkspace(newWorkspaceName)
       
-      // 2. Hydrate your global state array list natively to trigger visual updates instantly!
+      // Hydrate your global state array list natively to trigger visual updates instantly!
       addWorkspace(created)
       
-      // 3. Clear out text form tracking string values
       setNewWorkspaceName("")
       setIsCreating(false)
     } catch (error) {
@@ -50,7 +50,11 @@ export default function WorkspaceSidebar() {
       {/* Central Interactive Platform Brand Title Logo */}
       <div 
         className="flex items-center gap-2 mb-6 px-2 cursor-pointer" 
-        onClick={() => setActiveWorkspaceId(null)}
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            window.location.href = "/"
+          }
+        }}
       >
         <LayoutDashboard className="h-5 w-5 text-indigo-400" />
         <h2 className="font-bold text-lg tracking-tight">AI Assistant</h2>
