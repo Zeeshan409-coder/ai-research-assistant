@@ -19,7 +19,7 @@ class ResearchTask(BaseModel):
     """
     task_id: str = Field(..., description="Unique task identifier key block")
     description: str = Field(..., description="Actionable summary of what the agent must execute")
-    task_type: str = Field(..., description="Target worker designation, e.g., 'retrieve', 'web_search'")
+    task_type: str = Field(..., description="Target worker designation, e.g., 'retrieval', 'web_search'")
     assigned_to: Optional[str] = Field(None, description="The specific structural sub-agent name")
 
 
@@ -40,3 +40,12 @@ class ResearchEvidence(BaseModel):
     content: str = Field(..., description="The raw uncompressed structural text excerpt or chunk details")
     evidence_type: str = Field(..., description="Silo category mapping, e.g., 'local_rag', 'web_api'")
     score: Optional[float] = Field(0.0, description="Semantic grounding relevance weight score coefficient")
+
+
+class EvidenceBundle(BaseModel):
+    """
+    🎯 STEP 4 SCHEMAS ADDITION: Centralized multi-silo evidence collection matrix
+    aggregating internal vector data slices and external live internet web assets concurrently.
+    """
+    internal_evidence: List[ResearchEvidence] = Field(default_factory=list, description="Context components extracted from Qdrant vector spaces")
+    web_evidence: List[ResearchEvidence] = Field(default_factory=list, description="Live snippets harvested by interchangeable internet search providers")

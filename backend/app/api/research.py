@@ -26,6 +26,7 @@ async def run_research_workflow(
     """
     Agentic Gateway: Validates tenant sandbox permissions and boots up a top-down,
     deterministic automated multi-agent research and context compilation workflow loop.
+    Logs execution tracking metadata down into the PostgreSQL agent telemetry layers.
     """
     # 🛡️ Multi-Tenant Firewall Guard: Cross-examine ownership bounds before releasing agents
     workspace = db.query(Workspace).filter(Workspace.id == request.workspace_id).first()
@@ -44,6 +45,8 @@ async def run_research_workflow(
     try:
         # Trigger the asynchronous top-down orchestration pipeline execution matrix
         result = await orchestrator.execute(
+            db=db,
+            user_id=current_user.id,
             workspace_id=request.workspace_id,
             query=request.query
         )
