@@ -1,11 +1,37 @@
+import time
 from datetime import datetime, timezone
 from uuid import uuid4
 from sqlalchemy.orm import Session
 from app.models.agent_execution import AgentExecution
 
 
-class AgentTelemetryService:
+class AgentTelemetry:
+    """
+    High-Precision Monotonic Stopwatch Manager: Captures isolated execution metrics, 
+    latencies, and success states across individual sub-agent nodes.
+    """
+    def __init__(self, agent_name: str):
+        self.agent_name = agent_name
+        self.start = time.perf_counter()
 
+    def finish(self) -> dict:
+        """
+        Calculates total microsecond performance delta turnarounds 
+        and bundles an operational telemetry analytics report dictionary.
+        """
+        end = time.perf_counter()
+        return {
+            "agent_name": self.agent_name,
+            "latency_ms": round((end - self.start) * 1000, 2),
+            "success": True
+        }
+
+
+class AgentTelemetryService:
+    """
+    Distributed Tracing Persistence Engine: Commits fine-grained sub-agent 
+    operational rows straight into your PostgreSQL tracking databases.
+    """
     @staticmethod
     def log_execution(
         db: Session,
@@ -20,8 +46,8 @@ class AgentTelemetryService:
         end_time: datetime
     ):
         """
-        Distributed Tracing Engine: Records granular performance latency spikes, 
-        agent naming metadata states, and query parameters cleanly into database records.
+        Writes transactional trace logs to the database, ensuring network faults 
+        or table delays fail gracefully without interrupting central execution pipelines.
         """
         try:
             execution_log = AgentExecution(

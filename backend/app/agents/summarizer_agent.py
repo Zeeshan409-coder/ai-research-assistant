@@ -1,12 +1,13 @@
+from typing import Any
 from app.agents.base import BaseAgent
 from app.services.llm_service import generate_response
 
 
 class SummarizerAgent(BaseAgent):
     """
-    Cognitive Summarizer Agent (Phase 9.2): Evaluates fused multi-silo knowledge 
-    dossiers to isolate internal corporate vector findings from live external web insights, 
-    cross-references data integrity, and compiles an advanced enterprise research report.
+    Cognitive Summarizer Agent (Phase 9.3 Definitive): Evaluates fused knowledge dossiers 
+    alongside multi-agent audit critiques and fact-verification logs to synthesize 
+    an enterprise-grade research report that is completely self-reviewed before generation.
     """
 
     @property
@@ -14,35 +15,44 @@ class SummarizerAgent(BaseAgent):
         """Standardized abstract property implementation for tracking."""
         return "summarizer"
 
-    async def run(self, query: str, evidence: list) -> str:
+    async def run(self, query: str, evidence: list, critique: Any, verification: Any) -> str:
         """
-        Asynchronously builds a multi-domain context frame from fused evidence dictionaries 
-        and dispatches a comprehensive analytical instructions prompt to local llama3.2 weights.
+        Asynchronously formats fused knowledge text blocks, quality critique points, 
+        and factional reliability logs into a comprehensive cross-examined LLM prompt.
         """
         context = ""
 
-        # Construct structured domain separation context markers for the prompt matrix
+        # 1. Structure the multi-silo knowledge context strings
         for item in evidence:
             source_info = f" (Source: {item.get('source', 'Unknown')})"
             if item.get("type") == "internal":
-                context += f"[INTERNAL DATA SILO]{source_info}\n{item['content']}\n\n"
+                context += f"[INTERNAL DATA SILO]{source_info}\n{item.get('content', '')}\n\n"
             else:
-                context += f"[LIVE WEB INTEL SILO]{source_info}\n{item['content']}\n\n"
+                context += f"[LIVE WEB INTEL SILO]{source_info}\n{item.get('content', '')}\n\n"
 
+        # 2. Inject raw analytical payloads straight into the synthesis pass matrix prompt
         prompt = f"""You are an elite, enterprise-grade AI research analyst supervisor.
-Your mission is to compile a highly structured, objective, and deeply comprehensive Research Report by cross-examining internal repository records with fresh live internet intelligence.
+Your mission is to compile a highly structured, objective, and deeply comprehensive Research Report by cross-examining internal repository records with fresh live internet intelligence, actively accounting for the provided quality audit logs.
 
-Strict Ingestion Protocols:
-1. PRIORITIZE INTERNAL REPOSITORY DATA: Treat local workspace records as your primary truth matrix.
-2. SUPPLEMENT WITH LIVE WEB INTEL: Use external web evidence exclusively to add modern context, bridge knowledge gaps, or add timely metrics.
-3. CONFLICT IDENTIFICATION: Actively check for contradictions between internal records and web text (e.g., conflicting dates, versions, stats). Flag these explicitly.
-4. ABSOLUTE ZERO HALLUCINATION: Declare claims as facts ONLY if they are directly derived from the provided evidence data string nodes below.
+Operational Directives:
+- Prioritize internal corporate vector findings.
+- Use live web data to supplement, metricize, or fill data gaps.
+- Factor in the self-review critiques and factual verifications below to build an auditable, halluncination-free report.
 
-Target Investigation Request:
+Target User Investigation Intent:
 {query}
 
 Fused Multi-Silo Evidence Dossier:
 {context}
+
+---
+🤖 MULTI-AGENT SELF-REVIEW CRITIQUE ANALYSIS:
+{critique}
+
+---
+🛡️ MULTI-AGENT FACT-VERIFICATION ANALYSIS:
+{verification}
+---
 
 Generate the final enterprise report precisely matching this multi-sectional structural template:
 
@@ -58,11 +68,11 @@ Generate the final enterprise report precisely matching this multi-sectional str
 [Integrate supplementary metrics and real-time parameters captured from web channels]
 
 ## ⚠️ 4. ANOMALIES, RISKS & DATA CONTRADICTIONS
-[Explicitly map out any metric deviations, discrepancies, or conflicts found between internal files and external links. If none exist, explicitly state: 'No multi-silo data discrepancies identified.']
+[Explicitly call out the information gaps, unsupported claims, and contradictions flagged by our multi-agent self-review logs above. Address their potential impact on data integrity.]
 
 ## 🛡️ 5. DEFINITIVE ANALYTICAL CONCLUSION
 [Provide your concluding analytical resolution, fully grounded and backed back to source markers]
 """
 
-        # Dispatch the fused context prompt down to your local LLM inference worker
+        # Dispatch the self-corrected context prompt down to your local LLM inference worker
         return generate_response(prompt)
